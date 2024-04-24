@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">room example 2</string>
+    <string name="roll">Roll</string>
+    <string name="name">Name</string>
+    <string name="marks">Marks</string>
+    <string name="grade">grade</string>
+    <string name="roll_no">Roll No</string>
+    <string name="_name">Name</string>
+    <string name="_marks">Marks</string>
+    <string name="_grade">Grade</string>
+</resources>

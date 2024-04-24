@@ -1,0 +1,93 @@
+Must Watch Reference : https://developer.android.com/codelabs/android-room-with-a-view-kotlin#15
+
+----------------------------------------------------- *** Flow *** ------------------------------------------------------------------
+
+* It emit multiple values sequentially, as opposed to suspend functions that return only a single value. For example, you can use a flow to receive live updates from a database.
+* A flow is a stream of data that can be computed asynchronously. The emitted values must be of the same type. For example, a Flow<Int> is a flow that emits integer values.
+
+* to create flow , we use flow builder function and use emit function into stream of data :
+  val variable : Flow< Int > = flow {
+          val arr= ArrayOf(1, 2, 3, 4)
+          for( num in arr){
+              emit(num)
+          }
+  }
+
+* The emitted values is collected by collect() function : abstract suspend fun collect( collector: FlowCollector<T>)
+ eg. myFlow.collect { value -> println("Collected $value") }
+
+* there are some intermediaries which can be used to modify each value emitted into the stream or the stream itself. they are :
+     Let myFlow() is a function that emitting data as flow.
+     1. onStart :- Returns a flow that invokes the given action before this flow starts to be collected.
+        ex.  myFlow().onStart{                // we can use it by showing loading... on ui
+                 Log.d("TAG", "Starting Flow")
+                 emit("Begin")
+              }
+     2. onCompletion :- Returns a flow that invokes the given action after the flow is completed or cancelled.
+        ex.   myFlow().onCompletion{           // we can cleanup the data using this
+                   Log.d("TAG", "Completed")
+                   emit("Done")
+              }
+     3. onEach  :- Returns a flow that invokes the given action before each value of the upstream flow is emitted downstream.
+        ex.   myFlow().onEach{
+                    Log.d("TAG", "About to emit - $it")
+              }
+
+     4. map :- Returns a flow after implementing the operation. use to change the form of flow. we can apply any transformation to each value of flow.
+        ex. myFlow().map{
+                it*2
+            }
+     5. filter :- Returns a flow containing only values of the original flow that match the given predicate. Use any Booleans expression and implement on each value of flow
+                  and return flow if satisfy.
+        ex. myFlow().filter{
+             it<10
+            }
+     6. asFlow() :- Return any collection into Flow.
+        ex. val flow=list.onFlow()
+
+     7. buffer(capacity) :- it can be possible that time to consume the data may be greater than that of produce the data. It can slow the program. we can buffer the data by
+                 passing the capacity. It will buffer/collect the given capacity amount of data and when ever the consumer will be available , the buffer will provide it.
+        ex. myFlow.buffer(10)
+
+     8. flowOn (Dispatchers)  :- If you will collect the data on Main thread, the producer of flow will also work on Main thread. If you will try to implement producer
+                 on other thread (IO) the it will throw error.
+        To switch the context (thread), we will use flowOn. From the start to the "flowOn" stage, the code will implement on given context and then it will return to Main thread
+        and execute reining code to Main thread.
+        ex.  myFlow().map {}
+                   .filter{}
+                   .buffer(_)
+                   .flowOn(Dispatchers.IO)
+                   .collect{}
+
+        Here, myFlow, map, filter and buffer will execute on IO as they are above flowOn code, and collect will run on Main thread.
+
+
+
+
+
+
+------------------------------------- Repository ----------------------------------------------------------------------
+
+Data can come from multiple sources, like a network request, a local database, or from a file on the device.An app may even have more than one source of data.
+Repository is nothing but a extra layer (class). By separating layer from the UI code, you can make changes in one part of the code without affecting another.
+The data layer is made up of one or more repositories. Repositories themselves contain zero or more data sources.
+we can use class / Interface to create repository.
+reference :- https://developer.android.com/codelabs/basic-android-kotlin-compose-add-repository#2
+
+Instead of the ViewModel directly retrieving  the data, the repository provides the data.
+
+
+
+--------------------------------------------------- RoomDatabase.callback() -----------------------------------------------
+
+One of the main task that is usually performed in any application while creating database is to run few scripts to setup the database. Also, certain scripts need to
+be run every time database is opened.
+
+* constructor :- callback()
+
+* Methods :-
+  1. onCreate(db : SupportSQLiteDatabase) :- Called when the database is created for the first time.
+  2. onOpen(db : SupportSQLiteDatabase) :- Called when the database has been opened.
+
+Note :- To delete all content and repopulate the database whenever the app is created, you'll create a RoomDatabase.Callback and override onCreate().
+        Because you cannot do Room database operations on the UI thread, onCreate() launches a coroutine on the IO Dispatcher.
